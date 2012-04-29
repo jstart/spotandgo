@@ -70,14 +70,13 @@ def getRoute(start, destination)
 
   res = HTTParty.get("http://maps.googleapis.com/maps/api/directions/json?origin=#{start}&destination=#{destination}&mode=walking&waypoints=#{polyLines.gsub(/;/, '%7C').gsub(/\s/, '')}&sensor=false")
 
-  pp JSON.parse(res.body)
-  begin
-    directions = JSON.parse(res.body)['routes'].first['legs'].inject([]) do |sum, leg|
-      sum << leg['steps'].inject([]) do |sum, step|
-        sum << step['html_instructions']
-      end
+  directions = JSON.parse(res.body)['routes'].first['legs'].inject([]) do |sum, leg|
+    sum << leg['steps'].inject([]) do |sum, step|
+      sum << step['html_instructions']
     end
-  rescue
+  end
+
+  if directions.nil?
     directions = []
   end
   directions.flatten!.uniq!.map! do |direction|
