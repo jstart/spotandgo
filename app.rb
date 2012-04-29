@@ -11,19 +11,19 @@ JEPPESEN_API_KEY = '5af6d8a5-f1e9-4893-a0a4-30095fced29b'
 CATEGORY= {
   eat: {
     category: 'Food & Beverage > Restaurants',
-    distance: 805
+    distance: 500
   },
   shop: {
     category: 'Shopping',
-    distance: 609
+    distance: 500
   },
   watch: {
     category: 'Arts, Entertainment & Nightlife > Movie Theatres',
-    distance: 8047
+    distance: 500 
   },
   play: {
     category: 'Arts, Entertainment & Nightlife',
-    distance: 8047
+    distance: 500
   }
 }
 
@@ -66,17 +66,20 @@ end
 
 def getRoute(start, destination)
   res = HTTParty.get("http://journeyplanner.jeppesen.com/JourneyPlannerService/V2/REST/DataSets/LosAngeles/JourneyPlan?from=#{start}&to=#{destination}&date=2012-04-28T12:00&timeMode=&MappingDataRequired=true&timeoutInSeconds=&maxWalkDistanceInMetres=&walkSpeed=&maxJourneys=&returnFareData=&maxChanges=&transportModes=&serviceProviders=&checkRealTime=&transactionId=&ApiKey=5af6d8a5-f1e9-4893-a0a4-30095fced29b&format=json")
-  return polyLines = JSON.parse(res.body)['Journeys']#.first['Legs'].first['Polyline']
+  polyLines = JSON.parse(res.body)['Journeys'].first['Legs'].first['Polyline']
 
   res = HTTParty.get("http://maps.googleapis.com/maps/api/directions/json?origin=#{start}&destination=#{destination}&mode=walking&waypoints=#{polyLines.gsub(/;/, '%7C').gsub(/\s/, '')}&sensor=false")
 
-
-  directions = JSON.parse(res.body)['routes'].first['legs'].inject([]) do |sum, leg|
-    sum << leg['steps'].inject([]) do |sum, step|
-      sum << step['html_instructions']
+  pp JSON.parse(res.body)
+  begin
+    directions = JSON.parse(res.body)['routes'].first['legs'].inject([]) do |sum, leg|
+      sum << leg['steps'].inject([]) do |sum, step|
+        sum << step['html_instructions']
+      end
     end
+  rescue
+    directions = []
   end
-
   directions.flatten!.uniq!.map! do |direction|
     direction.gsub!( %r{</?[^>]+?>}, '' )
   end
