@@ -66,22 +66,26 @@ end
 
 def getRoute(start, destination)
   res = HTTParty.get("http://journeyplanner.jeppesen.com/JourneyPlannerService/V2/REST/DataSets/LosAngeles/JourneyPlan?from=#{start}&to=#{destination}&date=2012-04-28T12:00&timeMode=&MappingDataRequired=true&timeoutInSeconds=&maxWalkDistanceInMetres=&walkSpeed=&maxJourneys=&returnFareData=&maxChanges=&transportModes=&serviceProviders=&checkRealTime=&transactionId=&ApiKey=5af6d8a5-f1e9-4893-a0a4-30095fced29b&format=json")
-  polyLines = JSON.parse(res.body)['Journeys'].first['Legs'].first['Polyline']
+  if Integer(JSON.parse(res.body)['Status']['Severity']) == 0
+      polyLines = JSON.parse(res.body)['Journeys'].first['Legs'].first['Polyline']
 
-  res = HTTParty.get("http://maps.googleapis.com/maps/api/directions/json?origin=#{start}&destination=#{destination}&mode=walking&waypoints=#{polyLines.gsub(/;/, '%7C').gsub(/\s/, '')}&sensor=false")
-
-  directions = JSON.parse(res.body)['routes'].first['legs'].inject([]) do |sum, leg|
-    sum << leg['steps'].inject([]) do |sum, step|
-      sum << step['html_instructions']
+    res = HTTParty.get("http://maps.googleapis.com/maps/api/directions/json?origin=#{start}&destination=#{destination}&mode=walking&waypoints=#{polyLines.gsub(/;/, '%7C').gsub(/\s/, '')}&sensor=false")
+    directions = JSON.parse(res.body)['routes'].first['legs'].inject([]) do |sum, leg|
+      sum << leg['steps'].inject([]) do |sum, step|
+        sum << step['html_instructions']
+      end
     end
-  end
+  
 
-  if directions.nil?
-    directions = []
-  end
-  directions.flatten!.uniq!.map! do |direction|
-    direction.gsub!( %r{</?[^>]+?>}, '' )
-  end
+    if directions.nil?
+      directions = []
+    end
+    directions.flatten!.uniq!.map! do |direction|
+      direction.gsub!( %r{</?[^>]+?>}, '' )
+    end
 
-  {polylines: polyLines, directions: directions}
+    {polylines: polyLines, directions: directions}
+  else
+    {status: JSON.parse(res.body)['Status']}
+  end
 end
