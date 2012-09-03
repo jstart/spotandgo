@@ -1,38 +1,51 @@
 require 'sinatra'
 require 'sinatra/json'
-require 'factual'
 require 'httparty'
 require 'json'
+require './city_grid_api.rb'
 require 'pp'
 
-FACTUAL_OAUTH_KEY = 'JfIFEBzOotfWpiPmzXuyyvxeOcrl7vgfUHfaPG4F'
-FACTUAL_OAUTH_SECRET = 'Ps81zejoOIcKXADRfytX5M6bvOLINyrPTeLBRpmc'
-JEPPESEN_API_KEY = '5af6d8a5-f1e9-4893-a0a4-30095fced29b'
+# FACTUAL_OAUTH_KEY = 'JfIFEBzOotfWpiPmzXuyyvxeOcrl7vgfUHfaPG4F'
+# FACTUAL_OAUTH_SECRET = 'Ps81zejoOIcKXADRfytX5M6bvOLINyrPTeLBRpmc'
+# JEPPESEN_API_KEY = '5af6d8a5-f1e9-4893-a0a4-30095fced29b'
+
+module CityGridApi
+  PUBLISHER_ID = 'test'
+  HOST = 'api.citygridmedia.com'
+  PORT = 80
+  READ_TIMEOUT = 1
+    
+  PLACE_PATH = '/content/places/v2/detail'
+  SEARCH_PATH = '/content/places/v2/search/where'
+  LATLON_PATH = '/content/places/v2/search/latlon'
+end
+
 CATEGORY= {
   eat: {
-    category: 'Food & Beverage > Restaurants',
-    distance: 500
+  	tag_name: "Food & Dining",
+    tag: '1684'
   },
   shop: {
-    category: 'Shopping',
-    distance: 500
+    tag_name: "Shopping",
+    tag: '3849'
   },
   watch: {
-    category: 'Arts, Entertainment & Nightlife > Movie Theatres',
-    distance: 500 
+    tag: '157',
+    tag_name: "Movie Theaters"
   },
   play: {
-    category: 'Arts, Entertainment & Nightlife',
-    distance: 500
+    tag: '75',
+    tag_name: "Attractions"
   }
 }
 
-@@factual = Factual.new(FACTUAL_OAUTH_KEY, FACTUAL_OAUTH_SECRET)
+# @@factual = Factual.new(FACTUAL_OAUTH_KEY, FACTUAL_OAUTH_SECRET)
 
 post '/category' do
   params = JSON.parse(request.body.read)
-  response = findLocal(CATEGORY[params['category'].to_sym][:category], params['location'], CATEGORY[params['category'].to_sym][:distance], 4)
-  json(response, :encoder => :to_json)
+#   response = findLocal(CATEGORY[params['category'].to_sym][:category], params['location'], CATEGORY[params['category'].to_sym][:distance], 4)
+	response = CityGridApi::LatLonSearch.find({:tag => CATEGORY[params['category'].to_sym][:tag], :lat => params["location"][0], :lon => params["location"][1], :rpp => 4, :page => 1, :sort => "dist"})
+  json(response['results']['locations'], :encoder => :to_json)
 end
 
 post '/location' do
@@ -44,12 +57,12 @@ post '/location' do
 end
 
 def findLocal(category, location, distance, limit)
-  rows = @@factual.table('places').geo('$circle' => {'$center' => location, '$meters' => distance}).filters({'category' => category}).limit(limit).rows
-  response = rows.inject([]) do |sum, row|
-    sum << getDetails(row)
-  end
-
-  response 
+#   rows = @@factual.table('places').geo('$circle' => {'$center' => location, '$meters' => distance}).filters({'category' => category}).limit(limit).rows
+#   response = rows.inject([]) do |sum, row|
+#     sum << getDetails(row)
+#   end
+# 
+#   response 
 end
 
 def getDetails(row)
