@@ -31,7 +31,7 @@ CATEGORY= {
   },
   watch: {
     tag: '157',
-    tag_name: "Movie Theaters"
+    tag_name: "Movie Theater"
   },
   play: {
     tag: '75',
