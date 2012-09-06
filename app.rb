@@ -27,7 +27,7 @@ CATEGORY= {
     radius: 1
   },
   shop: {
-    tag_name: "Shopping",
+    tag_name: "Retail",
     tag: '3849',
     radius: 1
   },
