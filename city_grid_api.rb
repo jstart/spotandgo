@@ -202,6 +202,7 @@ module CityGridApi
       @rpp = params[:rpp]
       @page = params[:page]
       @sort = params[:sort]
+      @radius = params[:radius]
     end
 
     def request_path(defaults)
@@ -217,6 +218,7 @@ module CityGridApi
       options.update(:rpp => @rpp) if @rpp
       options.update(:page => @page) if @page
       options.update(:sort => @sort) if @sort
+      options.update(:radius => @radius) if @radius
 		  uri = Addressable::URI.new
 			uri.query_values = options
 		  
