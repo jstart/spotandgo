@@ -22,7 +22,7 @@ end
 
 CATEGORY= {
   eat: {
-  	tag_name: "Dining",
+  	tag_name: "Restaurants",
     tag: '1684',
     radius: 0.25
   },
