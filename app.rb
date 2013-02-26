@@ -49,7 +49,7 @@ post '/category' do
   params = JSON.parse(request.body.read)
 #   response = findLocal(CATEGORY[params['category'].to_sym][:category], params['location'], CATEGORY[params['category'].to_sym][:distance], 4)
 # :tag => CATEGORY[params['category'].to_sym][:tag]
-	response = CityGridApi::LatLonSearch.find({:what => CATEGORY[params['category'].to_sym][:tag_name], :lat => params["location"][0], :lon => params["location"][1], :rpp => 4, :page => 1, :sort => "mostreviewed", :radius => CATEGORY[params['category'].to_sym][:radius]})
+	response = CityGridApi::LatLonSearch.find({:what => CATEGORY[params['category'].to_sym][:tag_name], :lat => params["location"][0], :lon => params["location"][1], :rpp => params["result_count"], :page => 1, :sort => "mostreviewed", :radius => CATEGORY[params['category'].to_sym][:radius]})
   json(response['results']['locations'], :encoder => :to_json)
 end
 
